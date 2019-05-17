@@ -25,7 +25,11 @@ namespace WindowsFormsApplication2
                 dlg.Filter = "CSV ファイル (*.csv)|*.csv|すべてのファイル (*.*)|*.*";
                 DialogResult dr = dlg.ShowDialog();
 
-                if (dr != DialogResult.OK)
+                if (dr == DialogResult.OK)
+                {
+                    textBox1.Text = dlg.FileName;
+                }
+                else
                 {
                     return;
                 }
@@ -45,7 +49,8 @@ namespace WindowsFormsApplication2
                 return;
             }
 
-            using (TextFieldParser parser = new TextFieldParser(filePath))
+            //ファイルを開いて内容をチェックする
+            using (TextFieldParser parser = new TextFieldParser(filePath, Encoding.GetEncoding("shift_jis"), true))
             {
                 parser.TextFieldType = FieldType.Delimited;//todo 選択できるとよい
                 parser.SetDelimiters(",");                 //todo 選択できるとよい
@@ -53,6 +58,23 @@ namespace WindowsFormsApplication2
                 while (!parser.EndOfData)
                 {
                     string[] items = parser.ReadFields();
+
+                    using (DataTable dt = new DataTable())
+                    {
+                        dt.Columns.Add("項目", typeof(String));
+
+                        for (int i = 0; i < items.Length; i++)
+                        {
+                            DataRow dr = dt.NewRow();
+                            dr["項目"] = items[i];
+
+                            dt.Rows.Add(dr);
+                        }
+
+                        dataGridView1.DataSource = dt;
+                        dataGridView1.Columns[0].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    }
+                    break;
                 }
             }            
         }
